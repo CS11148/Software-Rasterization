@@ -257,6 +257,12 @@ namespace COL781 {
 		template<typename T> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, T value)
 		{
 			program.uniforms.set(name,value);
+
+
+
+
+
+			
 		}
 
 
