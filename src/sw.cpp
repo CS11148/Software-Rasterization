@@ -132,6 +132,16 @@ namespace COL781 {
 			values[name] = (void*)(new T(value));
 		}
 
+
+
+
+
+
+
+
+
+
+
 		bool Rasterizer::initialize(const std::string &title, int width, int height, int spp)
 		{
 			bool success = true;
@@ -257,6 +267,12 @@ namespace COL781 {
 		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec4 value)
 		{
 			program.uniforms.set(name,value);
+		}
+
+
+		void Rasterizer::useShaderProgram(const ShaderProgram &program)
+		{
+			*current_shaderprogram=program;
 		}
 
 

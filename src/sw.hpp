@@ -62,6 +62,7 @@ namespace COL781 {
 			// Create window and rasterizer attributes here
    			SDL_Surface* windowSurface; // Pointer to the window surface
    			SDL_Surface* framebuffer;  
+			ShaderProgram *current_shaderprogram = new ShaderProgram();
 		};
 
 	}
