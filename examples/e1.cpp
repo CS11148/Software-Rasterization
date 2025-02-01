@@ -32,7 +32,7 @@ int main() {
 		r.drawObject(tickmark);
         r.show();
     }
-    // r.deleteShaderProgram(program);
+    r.deleteShaderProgram(program);
 
     return EXIT_SUCCESS;
 }

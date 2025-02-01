@@ -302,6 +302,11 @@ namespace COL781 {
             SDL_UpdateWindowSurface(window);
 		}
 
+		void Rasterizer::deleteShaderProgram(ShaderProgram &Program)
+		{
+			current_shaderprogram=nullptr;
+		}
+
 
 
 
@@ -367,7 +372,7 @@ namespace COL781 {
 			float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
 			float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
-			std::vector<float> coordinates = {u,v,1-u-v};
+			std::vector<float> coordinates = {1-u-v,v,u};
 
 			return coordinates;
 
@@ -430,9 +435,28 @@ namespace COL781 {
 					// Create a point in the middle of the pixel
 					glm::vec4 point((float)x / screen_width * 2.0f - 1.0f, 1.0f - (float)y / screen_height * 2.0f, 0.0f, 1.0f);
 
-					glm::vec4 color_vertex = current_shaderprogram->fs(current_shaderprogram->uniforms,p1_att);
+					VertexShader vs = current_shaderprogram->vs;
+					FragmentShader fs = current_shaderprogram->fs;
+					Uniforms uniforms = current_shaderprogram->uniforms;
 
-					glm::vec4 colors = convert_to_rgb_colors(color_vertex);
+
+					Attribs out1 = Attribs();
+					Attribs out2 = Attribs();
+					Attribs out3 = Attribs();
+
+					vs(uniforms,p1_att,out1);
+					vs(uniforms,p2_att,out2);
+					vs(uniforms,p3_att,out3);
+
+					glm::vec4 color_vertex_1 = fs(uniforms,out1);
+					glm::vec4 color_vertex_2 = fs(uniforms,out2);
+					glm::vec4 color_vertex_3 = fs(uniforms,out3);
+
+					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1,p2,p3,point);
+
+					glm::vec4 average_c = average_color(color_vertex_1,color_vertex_2,color_vertex_3,Barycentric_C);
+
+					glm::vec4 colors = convert_to_rgb_colors(average_c);
 
 					
 					if (is_in_triangle(p1, p2, p3, point)) 
@@ -458,6 +482,20 @@ namespace COL781 {
 			int j = std::max(b,c);
 
 			return std::max(i,j);
+		}
+
+	
+
+		glm::vec4 Rasterizer::average_color(glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, std::vector<float> Barycentric_coordinates) {
+			// Ensure the Barycentric coordinates vector has exactly 3 elements
+			if (Barycentric_coordinates.size() != 3) {
+				throw std::invalid_argument("Barycentric_coordinates must have exactly 3 elements.");
+			}
+
+			
+			glm::vec4 average_color = c1 * Barycentric_coordinates[0] + c2 * Barycentric_coordinates[1] + c3 * Barycentric_coordinates[2];
+
+			return average_color;
 		}
 
 

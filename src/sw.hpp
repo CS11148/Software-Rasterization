@@ -79,6 +79,8 @@ namespace COL781 {
 
 			glm::vec4 convert_to_rgb_colors(glm::vec4 colors);
 
+			glm::vec4 average_color(glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, std::vector<float> Barycentric_coordinates);
+
 		};
 
 	}
