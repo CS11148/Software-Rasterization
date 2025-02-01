@@ -62,14 +62,23 @@ namespace COL781 {
 			// Create window and rasterizer attributes here
    			SDL_Surface* windowSurface; // Pointer to the window surface
    			SDL_Surface* framebuffer;  
-			ShaderProgram *current_shaderprogram = new ShaderProgram();
+			const ShaderProgram *current_shaderprogram = new ShaderProgram();
 
 			bool is_in_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, glm::vec4 point);
+
 			glm::vec2 convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height);
+
 			void draw_pixel(SDL_Surface* surface, int x, int y, Uint32 color);
-			void draw_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, SDL_Surface* framebuffer);
+
+			void draw_triangle(Attribs p1, Attribs p2, Attribs p3, SDL_Surface* framebuffer);
+
 			int min(int a, int b, int c);
 			int max(int a, int b, int c);
+
+			std::vector<float> Barycentric_Coordinates(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, glm::vec4 point);
+
+			glm::vec4 convert_to_rgb_colors(glm::vec4 colors);
+
 		};
 
 	}

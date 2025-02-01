@@ -18,17 +18,17 @@ target_link_libraries(a1 OpenGL::GL SDL2::SDL2)
 add_executable(e1 examples/e1.cpp)
 target_link_libraries(e1 a1)
 
-# add_executable(e2 examples/e2.cpp)
-# target_link_libraries(e2 a1)
+add_executable(e2 examples/e2.cpp)
+target_link_libraries(e2 a1)
 
-# add_executable(e3 examples/e3.cpp)
-# target_link_libraries(e3 a1)
+add_executable(e3 examples/e3.cpp)
+target_link_libraries(e3 a1)
 
-# add_executable(e4 examples/e4.cpp)
-# target_link_libraries(e4 a1)
+add_executable(e4 examples/e4.cpp)
+target_link_libraries(e4 a1)
 
-# add_executable(e5 examples/e5.cpp)
-# target_link_libraries(e5 a1)
+add_executable(e5 examples/e5.cpp)
+target_link_libraries(e5 a1)
 
-# add_executable(e6 examples/e6.cpp)
-# target_link_libraries(e6 a1)
+add_executable(e6 examples/e6.cpp)
+target_link_libraries(e6 a1)
