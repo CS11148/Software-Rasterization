@@ -189,8 +189,8 @@ namespace COL781 {
         	static_cast<Uint8>(color.b * 255),
         	static_cast<Uint8>(color.a * 255));
     		SDL_FillRect(framebuffer, NULL, color32);
-    		SDL_BlitSurface(framebuffer, NULL, windowSurface, NULL);
-    		SDL_UpdateWindowSurface(window); 
+    		// SDL_BlitSurface(framebuffer, NULL, windowSurface, NULL);
+    		// SDL_UpdateWindowSurface(window); 
 
 		}
 
@@ -273,6 +273,149 @@ namespace COL781 {
 		void Rasterizer::useShaderProgram(const ShaderProgram &program)
 		{
 			*current_shaderprogram=program;
+		}
+
+		void Rasterizer::drawObject(const Object& tickmark)
+		{
+
+			for(int i=0; i<tickmark.indices.size(); ++i)
+			{
+
+				glm::ivec3 triangle = tickmark.indices[i];
+
+				Attribs p1_att = tickmark.vertexAttributes[triangle[0]];
+
+				glm::vec4 p1 = p1_att.get<glm::vec4>(0);
+
+
+
+				Attribs p2_att = tickmark.vertexAttributes[triangle[1]];
+
+				glm::vec4 p2 = p2_att.get<glm::vec4>(0);
+
+
+
+				Attribs p3_att = tickmark.vertexAttributes[triangle[2]];
+
+				glm::vec4 p3 = p3_att.get<glm::vec4>(0);
+
+				draw_triangle(p1,p2,p3, framebuffer);
+
+			}
+
+		}
+
+		void Rasterizer::show()
+		{
+			SDL_BlitScaled(framebuffer, NULL, windowSurface, NULL);
+            SDL_UpdateWindowSurface(window);
+		}
+
+
+
+
+
+
+
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		bool Rasterizer::is_in_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, glm::vec4 point)
+		{
+			// Remove the extra homogeneous coordinate (the fourth component)
+			glm::vec3 v0 = glm::vec3(p1);
+			glm::vec3 v1 = glm::vec3(p2);
+			glm::vec3 v2 = glm::vec3(p3);
+			glm::vec3 p = glm::vec3(point);
+			
+			// Compute vectors
+			glm::vec3 v0v1 = v1 - v0;
+			glm::vec3 v0v2 = v2 - v0;
+			glm::vec3 v0p = p - v0;
+			
+			// Compute dot products
+			float dot00 = glm::dot(v0v2, v0v2);
+			float dot01 = glm::dot(v0v2, v0v1);
+			float dot02 = glm::dot(v0v2, v0p);
+			float dot11 = glm::dot(v0v1, v0v1);
+			float dot12 = glm::dot(v0v1, v0p);
+			
+			// Compute barycentric coordinates
+			float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+			float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+			float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+			
+			// Check if point is in triangle
+			return (u >= 0) && (v >= 0) && (u + v < 1);
+		}
+
+		
+		glm::vec2 Rasterizer::convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height) {
+			float x = (point.x + 1.0f) * 0.5f * screen_width;
+			float y = (1.0f - point.y) * 0.5f * screen_height;
+			return glm::vec2(x, y);
+		}
+
+	
+		void Rasterizer::draw_pixel(SDL_Surface* surface, int x, int y, Uint32 color) {
+			if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
+				Uint32* pixels = (Uint32*)surface->pixels;
+				pixels[(y * surface->w) + x] = color;
+			}
+		}
+
+		// Function to draw a triangle using the is_in_triangle function
+		void Rasterizer::draw_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, SDL_Surface* framebuffer) {
+			int screen_width = framebuffer->w;
+			int screen_height = framebuffer->h;
+
+			// Convert 3D coordinates to 2D screen coordinates
+			glm::vec2 p1_screen = convert_to_screen_coordinates(p1, screen_width, screen_height);
+			glm::vec2 p2_screen = convert_to_screen_coordinates(p2, screen_width, screen_height);
+			glm::vec2 p3_screen = convert_to_screen_coordinates(p3, screen_width, screen_height);
+
+			// int min_x = min({static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x)});
+			// int max_x = max({static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x)});
+			// int min_y = min({static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y)});
+			// int max_y = max({static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y)});
+
+			int min_x = 0;
+			int max_x = 640;
+			int min_y = 0;
+			int max_y = 480;
+
+			// Iterate through each pixel in the bounding box
+			for (int y = min_y; y <= max_y; ++y) {
+				for (int x = min_x; x <= max_x; ++x) {
+					// Create a point in the middle of the pixel
+					glm::vec4 point((float)x / screen_width * 2.0f - 1.0f, 1.0f - (float)y / screen_height * 2.0f, 0.0f, 1.0f);
+
+					// Check if the point is inside the triangle
+					if (is_in_triangle(p1, p2, p3, point)) {
+						// Draw the pixel
+						Uint32 color = SDL_MapRGB(framebuffer->format, 0, 255, 0);
+						draw_pixel(framebuffer, x, y, color);
+					}
+				}
+			}
+		}
+
+
+		int Rasterizer::min(int a,int b ,int c)
+		{
+			int i = std::min(a,b);
+			int j = std::min(b,c);			
+			return std::min(i,j);
+		}
+
+		int Rasterizer::max(int a,int b ,int c)
+		{
+			int i = std::max(a,b);
+			int j = std::max(b,c);
+
+			return std::max(i,j);
 		}
 
 
