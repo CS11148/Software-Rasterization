@@ -44,6 +44,16 @@ namespace COL781 {
 			};
 		}
 
+		VertexShader Rasterizer::vsColorTransform() {
+			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
+				glm::vec4 vertex = in.get<glm::vec4>(0);
+				glm::vec4 color = in.get<glm::vec4>(1);
+				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
+				out.set<glm::vec4>(0, color);
+				return transform*vertex;
+			};
+		}
+
 		FragmentShader Rasterizer::fsConstant() {
 			return [](const Uniforms &uniforms, const Attribs &in) {
 				glm::vec4 color = uniforms.get<glm::vec4>("color");
@@ -270,6 +280,11 @@ namespace COL781 {
 			program.uniforms.set(name,value);
 		}
 
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat4 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
 
 		void Rasterizer::useShaderProgram(const ShaderProgram &program)
 		{
@@ -305,6 +320,22 @@ namespace COL781 {
 		void Rasterizer::deleteShaderProgram(ShaderProgram &Program)
 		{
 			current_shaderprogram=nullptr;
+		}
+
+		void Rasterizer::enableDepthTest()
+		{
+			depth_enabled = true;
+
+	
+			z_buffer = new float[framebuffer->w * framebuffer->h];
+
+			
+			for(int i = 0; i < framebuffer->w; ++i) {
+				for(int j = 0; j < framebuffer->h; ++j) {
+					z_buffer[i * framebuffer->h + j] = 1.0f;
+				}
+			}
+
 		}
 
 
@@ -379,10 +410,68 @@ namespace COL781 {
 		}
 
 		
-		glm::vec2 Rasterizer::convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height) {
-			float x = (point.x + 1.0f) * 0.5f * screen_width;
-			float y = (1.0f - point.y) * 0.5f * screen_height;
-			return glm::vec2(x, y);
+		glm::vec2 Rasterizer::convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height,bool depth_enabled) 
+		{
+			if(depth_enabled==false)
+			{
+				float x = (point.x + 1.0f) * 0.5f * screen_width;
+				float y = (1.0f - point.y) * 0.5f * screen_height;
+				return glm::vec2(x, y);
+			}
+
+			else 
+    		{
+				// Define camera position at z = -1
+				glm::vec3 camera_pos(0.0f, 0.0f, -1.0f);
+
+				// Define screen plane at z = 0
+				float screen_z = 0.0f;
+
+				// Calculate the direction from the camera to the point
+				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
+
+				// Find the intersection of the ray with the screen plane
+				float t = (screen_z - camera_pos.z) / direction.z;
+				glm::vec3 intersection = camera_pos + t * direction;
+
+				// Convert the intersection point to screen coordinates
+				float x = (intersection.x + 1.0f) * 0.5f * screen_width;
+				float y = (1.0f - intersection.y) * 0.5f * screen_height;
+
+				return glm::vec2(x, y);
+    		}
+		}
+
+		glm::vec4 Rasterizer::perspective_coordinates(glm::vec4 point, int screen_width, int screen_height, bool depth_enabled)
+		{
+			if(depth_enabled==false)
+			{
+				float x = point.x; 
+				float y = point.y;
+				return glm::vec4(x, y,0,0);
+			}
+
+			else 
+    		{
+				// Define camera position at z = -1
+				glm::vec3 camera_pos(0.0f, 0.0f, -1.0f);
+
+				// Define screen plane at z = 0
+				float screen_z = 0.0f;
+
+				// Calculate the direction from the camera to the point
+				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
+
+				// Find the intersection of the ray with the screen plane
+				float t = (screen_z - camera_pos.z) / direction.z;
+				glm::vec3 intersection = camera_pos + t * direction;
+
+				// Convert the intersection point to screen coordinates
+				float x = intersection.x; 
+				float y = intersection.y;
+
+				return glm::vec4(x, y,0,0);
+    		}
 		}
 
 		glm::vec4 Rasterizer::convert_to_rgb_colors(glm::vec4 colors)
@@ -417,16 +506,40 @@ namespace COL781 {
 			int screen_width = framebuffer->w;
 			int screen_height = framebuffer->h;
 
+			VertexShader vs = current_shaderprogram->vs;
+			FragmentShader fs = current_shaderprogram->fs;
+			Uniforms uniforms = current_shaderprogram->uniforms;
+
+			Attribs out1 = Attribs();
+			Attribs out2 = Attribs();
+			Attribs out3 = Attribs();
+
+			p1 = vs(uniforms,p1_att,out1);
+			p2 = vs(uniforms,p2_att,out2);
+			p3 = vs(uniforms,p3_att,out3);
+
+			glm::vec4 color_vertex_1 = fs(uniforms,out1);
+			glm::vec4 color_vertex_2 = fs(uniforms,out2);
+			glm::vec4 color_vertex_3 = fs(uniforms,out3);
+
 			// Convert 3D coordinates to 2D screen coordinates
-			glm::vec2 p1_screen = convert_to_screen_coordinates(p1, screen_width, screen_height);
-			glm::vec2 p2_screen = convert_to_screen_coordinates(p2, screen_width, screen_height);
-			glm::vec2 p3_screen = convert_to_screen_coordinates(p3, screen_width, screen_height);
+			glm::vec2 p1_screen = convert_to_screen_coordinates(p1, screen_width, screen_height,depth_enabled);
+			glm::vec2 p2_screen = convert_to_screen_coordinates(p2, screen_width, screen_height,depth_enabled);
+			glm::vec2 p3_screen = convert_to_screen_coordinates(p3, screen_width, screen_height,depth_enabled);
+
+			glm::vec4 p1_perspective = perspective_coordinates(p1,screen_width,screen_height,depth_enabled);
+			glm::vec4 p2_perpsective = perspective_coordinates(p2,screen_width,screen_height,depth_enabled);
+			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
 
 			int min_x = min(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));
 			int max_x = max(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));
 			int min_y = min(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 			int max_y = max(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 
+			max_x=framebuffer->w;
+			max_y=framebuffer->h;
+			min_x=0;
+			min_y=0;
 			
 			for (int y = min_y; y <= max_y; ++y) 
 			{
@@ -435,34 +548,30 @@ namespace COL781 {
 					// Create a point in the middle of the pixel
 					glm::vec4 point((float)x / screen_width * 2.0f - 1.0f, 1.0f - (float)y / screen_height * 2.0f, 0.0f, 1.0f);
 
-					VertexShader vs = current_shaderprogram->vs;
-					FragmentShader fs = current_shaderprogram->fs;
-					Uniforms uniforms = current_shaderprogram->uniforms;
-
-
-					Attribs out1 = Attribs();
-					Attribs out2 = Attribs();
-					Attribs out3 = Attribs();
-
-					vs(uniforms,p1_att,out1);
-					vs(uniforms,p2_att,out2);
-					vs(uniforms,p3_att,out3);
-
-					glm::vec4 color_vertex_1 = fs(uniforms,out1);
-					glm::vec4 color_vertex_2 = fs(uniforms,out2);
-					glm::vec4 color_vertex_3 = fs(uniforms,out3);
-
-					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1,p2,p3,point);
+					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1_perspective,p2_perpsective,p3_perspective,point);
 
 					glm::vec4 average_c = average_color(color_vertex_1,color_vertex_2,color_vertex_3,Barycentric_C);
 
 					glm::vec4 colors = convert_to_rgb_colors(average_c);
 
+					float z = Barycentric_C[0]*p1.z+Barycentric_C[1]*p2.z+Barycentric_C[2]*p3.z;
 					
 					if (is_in_triangle(p1, p2, p3, point)) 
 					{
-						Uint32 color = SDL_MapRGB(framebuffer->format, colors.x, colors.y, colors.z);
-						draw_pixel(framebuffer, x, y, color);
+
+						if(depth_enabled==false)
+						{
+							Uint32 color = SDL_MapRGB(framebuffer->format, colors.x, colors.y, colors.z);
+							draw_pixel(framebuffer, x, y, color);
+						}
+
+						else if(z<=z_buffer[y*screen_width+x])
+						{
+							z_buffer[y*screen_width+x]=z;
+							Uint32 color = SDL_MapRGB(framebuffer->format, colors.x, colors.y, colors.z);
+							draw_pixel(framebuffer, x, y, color);
+						}
+
 					}
 				}
 			}

@@ -63,10 +63,18 @@ namespace COL781 {
    			SDL_Surface* windowSurface; // Pointer to the window surface
    			SDL_Surface* framebuffer;  
 			const ShaderProgram *current_shaderprogram = new ShaderProgram();
+			bool depth_enabled = false;
+			float* z_buffer;
+
+
+
+
 
 			bool is_in_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, glm::vec4 point);
 
-			glm::vec2 convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height);
+			glm::vec2 convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height, bool depth_enabled);
+
+			glm::vec4 perspective_coordinates(glm::vec4 point, int screen_width, int screen_height, bool depth_enabled);
 
 			void draw_pixel(SDL_Surface* surface, int x, int y, Uint32 color);
 
