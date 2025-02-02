@@ -51,6 +51,7 @@ namespace COL781 {
 				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
 				out.set<glm::vec4>(0, color);
 				return transform*vertex;
+				// return vertex;
 			};
 		}
 
@@ -200,8 +201,16 @@ namespace COL781 {
         	static_cast<Uint8>(color.b * 255),
         	static_cast<Uint8>(color.a * 255));
     		SDL_FillRect(framebuffer, NULL, color32);
-    		// SDL_BlitSurface(framebuffer, NULL, windowSurface, NULL);
-    		// SDL_UpdateWindowSurface(window); 
+    		
+			if(depth_enabled == true)
+			{
+			for(int i = 0; i < framebuffer->w; ++i) {
+				for(int j = 0; j < framebuffer->h; ++j) {
+					z_buffer[i * framebuffer->h + j] = 100.0f;
+				}
+			}
+
+			}
 
 		}
 
@@ -332,7 +341,7 @@ namespace COL781 {
 			
 			for(int i = 0; i < framebuffer->w; ++i) {
 				for(int j = 0; j < framebuffer->h; ++j) {
-					z_buffer[i * framebuffer->h + j] = 1.0f;
+					z_buffer[i * framebuffer->h + j] = 100.0f;
 				}
 			}
 
@@ -412,6 +421,11 @@ namespace COL781 {
 		
 		glm::vec2 Rasterizer::convert_to_screen_coordinates(glm::vec4 point, int screen_width, int screen_height,bool depth_enabled) 
 		{
+
+			point.x=(point.x)/(point.w);
+			point.y=(point.y)/(point.w);
+			point.z=(point.z)/(point.w);
+
 			if(depth_enabled==false)
 			{
 				float x = (point.x + 1.0f) * 0.5f * screen_width;
@@ -422,10 +436,10 @@ namespace COL781 {
 			else 
     		{
 				// Define camera position at z = -1
-				glm::vec3 camera_pos(0.0f, 0.0f, -1.0f);
+				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
 
 				// Define screen plane at z = 0
-				float screen_z = 0.0f;
+				float screen_z = -1.0f;
 
 				// Calculate the direction from the camera to the point
 				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
@@ -444,6 +458,11 @@ namespace COL781 {
 
 		glm::vec4 Rasterizer::perspective_coordinates(glm::vec4 point, int screen_width, int screen_height, bool depth_enabled)
 		{
+
+			point.x=(point.x)/(point.w);
+			point.y=(point.y)/(point.w);
+			point.z=(point.z)/(point.w);
+
 			if(depth_enabled==false)
 			{
 				float x = point.x; 
@@ -454,10 +473,10 @@ namespace COL781 {
 			else 
     		{
 				// Define camera position at z = -1
-				glm::vec3 camera_pos(0.0f, 0.0f, -1.0f);
+				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
 
 				// Define screen plane at z = 0
-				float screen_z = 0.0f;
+				float screen_z = -1.0f;
 
 				// Calculate the direction from the camera to the point
 				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
@@ -502,6 +521,10 @@ namespace COL781 {
 			glm::vec4 p2 = p2_att.get<glm::vec4>(0);
 			glm::vec4 p3 = p3_att.get<glm::vec4>(0);
 
+			std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<std::endl;
+			std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<std::endl;
+			std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<std::endl;
+
 
 			int screen_width = framebuffer->w;
 			int screen_height = framebuffer->h;
@@ -518,6 +541,10 @@ namespace COL781 {
 			p2 = vs(uniforms,p2_att,out2);
 			p3 = vs(uniforms,p3_att,out3);
 
+			std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<" "<<p1.w<<std::endl;
+			std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<" "<<p2.w<<std::endl;
+			std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<" "<<p3.w<<std::endl;
+
 			glm::vec4 color_vertex_1 = fs(uniforms,out1);
 			glm::vec4 color_vertex_2 = fs(uniforms,out2);
 			glm::vec4 color_vertex_3 = fs(uniforms,out3);
@@ -528,8 +555,17 @@ namespace COL781 {
 			glm::vec2 p3_screen = convert_to_screen_coordinates(p3, screen_width, screen_height,depth_enabled);
 
 			glm::vec4 p1_perspective = perspective_coordinates(p1,screen_width,screen_height,depth_enabled);
-			glm::vec4 p2_perpsective = perspective_coordinates(p2,screen_width,screen_height,depth_enabled);
+			glm::vec4 p2_perspective = perspective_coordinates(p2,screen_width,screen_height,depth_enabled);
 			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
+
+
+			std::cout<<"p1_screen "<<p1_screen.x<<" "<<p1_screen.y<<std::endl;
+			std::cout<<"p2 screen "<<p2_screen.x<<" "<<p2_screen.y<<std::endl;
+			std::cout<<"p3 screen "<<p3_screen.x<<" "<<p3_screen.y<<std::endl;
+
+			std::cout<<"p1_perspective "<<p1_perspective.x<<" "<<p1_perspective.y<<" "<<p1_perspective.z<<" "<<p1_perspective.w<<std::endl;
+			std::cout<<"p2_perspective "<<p2_perspective.x<<" "<<p2_perspective.y<<" "<<p2_perspective.z<<" "<<p2_perspective.w<<std::endl;
+			std::cout<<"p3_perspective "<<p3_perspective.x<<" "<<p3_perspective.y<<" "<<p3_perspective.z<<" "<<p3_perspective.w<<std::endl;
 
 			int min_x = min(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));
 			int max_x = max(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));
@@ -548,7 +584,7 @@ namespace COL781 {
 					// Create a point in the middle of the pixel
 					glm::vec4 point((float)x / screen_width * 2.0f - 1.0f, 1.0f - (float)y / screen_height * 2.0f, 0.0f, 1.0f);
 
-					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1_perspective,p2_perpsective,p3_perspective,point);
+					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1_perspective,p2_perspective,p3_perspective,point);
 
 					glm::vec4 average_c = average_color(color_vertex_1,color_vertex_2,color_vertex_3,Barycentric_C);
 
@@ -556,7 +592,7 @@ namespace COL781 {
 
 					float z = Barycentric_C[0]*p1.z+Barycentric_C[1]*p2.z+Barycentric_C[2]*p3.z;
 					
-					if (is_in_triangle(p1, p2, p3, point)) 
+					if (is_in_triangle(p1_perspective, p2_perspective, p3_perspective, point)) 
 					{
 
 						if(depth_enabled==false)
