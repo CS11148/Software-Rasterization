@@ -51,8 +51,20 @@ namespace COL781 {
 				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
 				out.set<glm::vec4>(0, color);
 				return transform*vertex;
-				// return vertex;
 			};
+		}
+
+		VertexShader Rasterizer::vsNormalTransform(){
+			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
+				glm::vec4 vertex = in.get<glm::vec4>(0);
+				glm::vec4 normal = in.get<glm::vec4>(1);
+				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
+				glm::mat4 wsTransform = uniforms.get<glm::mat4>("wsTransform");
+				out.set<glm::vec4>(0,normal*wsTransform);
+				return transform*vertex;
+				
+			};
+
 		}
 
 		FragmentShader Rasterizer::fsConstant() {
@@ -65,6 +77,76 @@ namespace COL781 {
 		FragmentShader Rasterizer::fsIdentity() {
 			return [](const Uniforms &uniforms, const Attribs &in) {
 				glm::vec4 color = in.get<glm::vec4>(0);
+				return color;
+			};
+		}
+
+		FragmentShader Rasterizer::fsDiffuseLighting(){
+			return [](const Uniforms &uniforms, const Attribs &in) {
+				glm::vec3 normal = in.get<glm::vec4>(0);
+
+				glm::vec3 object_color = uniforms.get<glm::vec3>("objectColor");
+				glm::vec3 ambient_color = uniforms.get<glm::vec3>("ambientColor");
+
+				glm::vec3 ambient = object_color*ambient_color;
+
+
+				glm::vec3 light_color = uniforms.get<glm::vec3>("lightColor");
+				glm::vec3 light_direction = uniforms.get<glm::vec3>("lightDir");
+
+				float diffuse_intensity = std::max(0.0f,dot(normal,light_direction));
+
+				glm::vec3 diffuse_light = diffuse_intensity*light_color*object_color;
+
+				glm::vec3 final_color = ambient+diffuse_light;
+
+				glm::vec4 color(final_color.x,final_color.y,final_color.z,1.0f);
+
+				return color;
+			};
+		}
+
+		FragmentShader Rasterizer::fsSpecularLighting(){
+			return [](const Uniforms &uniforms, const Attribs &in) {
+				glm::vec3 normal = glm::normalize(in.get<glm::vec4>(0));  // Make sure the normal is normalized
+
+				// Object and ambient colors
+				glm::vec3 object_color = uniforms.get<glm::vec3>("objectColor");
+				glm::vec3 ambient_color = uniforms.get<glm::vec3>("ambientColor");
+				
+				// Ambient lighting contribution
+				glm::vec3 ambient = object_color * ambient_color;
+
+				// Light parameters
+				glm::vec3 light_color = uniforms.get<glm::vec3>("lightColor");
+				glm::vec3 light_direction = glm::normalize(uniforms.get<glm::vec3>("lightDir"));  // Make sure the light direction is normalized
+
+				// Calculate the diffuse lighting
+				float diffuse_intensity = std::max(0.0f, glm::dot(normal, light_direction));
+				glm::vec3 diffuse_light = diffuse_intensity * light_color * object_color;
+
+				// View parameters
+				glm::vec3 view_position = uniforms.get<glm::vec3>("viewPos");
+				glm::vec3 frag_position = in.get<glm::vec3>(0);  // Assuming position is stored in the 2nd attribute slot
+				glm::vec3 view_direction = glm::normalize(view_position - frag_position);
+
+				// Reflection direction (R = 2 * (N · L) * N - L)
+				glm::vec3 reflect_dir = glm::normalize(glm::reflect(-light_direction, normal));
+
+				// Calculate the specular component
+				float specular_strength = std::max(0.0f, glm::dot(view_direction, reflect_dir));
+				float shininess = uniforms.get<float>("blinnpow");  // Shininess factor (Blinn exponent)
+				float specular_intensity = std::pow(specular_strength, shininess);
+
+				// Specular lighting contribution
+				glm::vec3 specular_light = specular_intensity * light_color;  // Specular color is typically the light color
+
+				// Final color: Ambient + Diffuse + Specular
+				glm::vec3 final_color = ambient + diffuse_light + specular_light;
+
+				// Convert final color to a 4D vector and return
+				glm::vec4 color(final_color.x, final_color.y, final_color.z, 1.0f);
+
 				return color;
 			};
 		}
@@ -284,12 +366,27 @@ namespace COL781 {
 
 		}
 
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec3 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
 		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec4 value)
 		{
 			program.uniforms.set(name,value);
 		}
 
 		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat4 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, float value)
+		{
+			program.uniforms.set(name,value);
+		}
+
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, int value)
 		{
 			program.uniforms.set(name,value);
 		}
@@ -541,9 +638,9 @@ namespace COL781 {
 			p2 = vs(uniforms,p2_att,out2);
 			p3 = vs(uniforms,p3_att,out3);
 
-			std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<" "<<p1.w<<std::endl;
-			std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<" "<<p2.w<<std::endl;
-			std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<" "<<p3.w<<std::endl;
+			// std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<" "<<p1.w<<std::endl;
+			// std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<" "<<p2.w<<std::endl;
+			// std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<" "<<p3.w<<std::endl;
 
 			glm::vec4 color_vertex_1 = fs(uniforms,out1);
 			glm::vec4 color_vertex_2 = fs(uniforms,out2);
@@ -559,13 +656,13 @@ namespace COL781 {
 			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
 
 
-			std::cout<<"p1_screen "<<p1_screen.x<<" "<<p1_screen.y<<std::endl;
-			std::cout<<"p2 screen "<<p2_screen.x<<" "<<p2_screen.y<<std::endl;
-			std::cout<<"p3 screen "<<p3_screen.x<<" "<<p3_screen.y<<std::endl;
+			// std::cout<<"p1_screen "<<p1_screen.x<<" "<<p1_screen.y<<std::endl;
+			// std::cout<<"p2 screen "<<p2_screen.x<<" "<<p2_screen.y<<std::endl;
+			// std::cout<<"p3 screen "<<p3_screen.x<<" "<<p3_screen.y<<std::endl;
 
-			std::cout<<"p1_perspective "<<p1_perspective.x<<" "<<p1_perspective.y<<" "<<p1_perspective.z<<" "<<p1_perspective.w<<std::endl;
-			std::cout<<"p2_perspective "<<p2_perspective.x<<" "<<p2_perspective.y<<" "<<p2_perspective.z<<" "<<p2_perspective.w<<std::endl;
-			std::cout<<"p3_perspective "<<p3_perspective.x<<" "<<p3_perspective.y<<" "<<p3_perspective.z<<" "<<p3_perspective.w<<std::endl;
+			// std::cout<<"p1_perspective "<<p1_perspective.x<<" "<<p1_perspective.y<<" "<<p1_perspective.z<<" "<<p1_perspective.w<<std::endl;
+			// std::cout<<"p2_perspective "<<p2_perspective.x<<" "<<p2_perspective.y<<" "<<p2_perspective.z<<" "<<p2_perspective.w<<std::endl;
+			// std::cout<<"p3_perspective "<<p3_perspective.x<<" "<<p3_perspective.y<<" "<<p3_perspective.z<<" "<<p3_perspective.w<<std::endl;
 
 			int min_x = min(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));
 			int max_x = max(static_cast<int>(p1_screen.x), static_cast<int>(p2_screen.x), static_cast<int>(p3_screen.x));

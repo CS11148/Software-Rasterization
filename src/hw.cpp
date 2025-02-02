@@ -327,9 +327,13 @@ namespace COL781 {
 				"in vec3 normal;\n"
 				"out vec4 fColor;\n"
 				"void main() {\n"
+				"	vec3 I = pow(lightColor, vec3(2.2f));\n"
+				"	vec3 ka = pow(ambientColor, vec3(2.2f));\n"
+				"	vec3 kd = pow(objectColor, vec3(2.2f));\n"	
 				"	float diff = max(dot(normalize(normal), normalize(lightDir)), 0.0);\n"
-				"	vec3 diffuse = diff * lightColor * objectColor;\n"
-				"	fColor = vec4(ambientColor + diffuse, 1.0);\n"
+				"	vec3 diffuse = diff * I * kd;\n"
+				"	vec3 linColor = ka + diffuse;\n"
+				"	fColor = vec4(pow(linColor, vec3(1.0f / 2.2f)), 1.0);\n"
 				"}\n";
 			return createShader(GL_FRAGMENT_SHADER, source);
 		}
