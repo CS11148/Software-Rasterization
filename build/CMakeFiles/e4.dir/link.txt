@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/e4.dir/examples/e4.cpp.o -o e4  liba1.a /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2.so 

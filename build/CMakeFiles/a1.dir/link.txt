@@ -1,0 +1,2 @@
+/usr/bin/ar qc liba1.a CMakeFiles/a1.dir/src/hw.cpp.o CMakeFiles/a1.dir/src/sw.cpp.o CMakeFiles/a1.dir/deps/src/gl.c.o
+/usr/bin/ranlib liba1.a
