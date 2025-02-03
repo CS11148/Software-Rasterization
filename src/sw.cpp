@@ -669,10 +669,10 @@ namespace COL781 {
 			int min_y = min(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 			int max_y = max(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 
-			max_x=framebuffer->w;
-			max_y=framebuffer->h;
-			min_x=0;
-			min_y=0;
+			// max_x=framebuffer->w;
+			// max_y=framebuffer->h;
+			// min_x=0;
+			// min_y=0;
 			
 			for (int y = min_y; y <= max_y; ++y) 
 			{

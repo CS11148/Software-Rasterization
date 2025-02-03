@@ -207,6 +207,19 @@ e6/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/e6.dir/build.make CMakeFiles/e6.dir/build
 .PHONY : e6/fast
 
+#=============================================================================
+# Target rules for targets named clock
+
+# Build rule for target.
+clock: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clock
+.PHONY : clock
+
+# fast build rule for target.
+clock/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/build
+.PHONY : clock/fast
+
 deps/src/gl.o: deps/src/gl.c.o
 .PHONY : deps/src/gl.o
 
@@ -230,6 +243,30 @@ deps/src/gl.s: deps/src/gl.c.s
 deps/src/gl.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/a1.dir/build.make CMakeFiles/a1.dir/deps/src/gl.c.s
 .PHONY : deps/src/gl.c.s
+
+examples/clock.o: examples/clock.cpp.o
+.PHONY : examples/clock.o
+
+# target to build an object file
+examples/clock.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/examples/clock.cpp.o
+.PHONY : examples/clock.cpp.o
+
+examples/clock.i: examples/clock.cpp.i
+.PHONY : examples/clock.i
+
+# target to preprocess a source file
+examples/clock.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/examples/clock.cpp.i
+.PHONY : examples/clock.cpp.i
+
+examples/clock.s: examples/clock.cpp.s
+.PHONY : examples/clock.s
+
+# target to generate assembly for a file
+examples/clock.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/examples/clock.cpp.s
+.PHONY : examples/clock.cpp.s
 
 examples/e1.o: examples/e1.cpp.o
 .PHONY : examples/e1.o
@@ -432,6 +469,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... a1"
+	@echo "... clock"
 	@echo "... e1"
 	@echo "... e2"
 	@echo "... e3"
@@ -441,6 +479,9 @@ help:
 	@echo "... deps/src/gl.o"
 	@echo "... deps/src/gl.i"
 	@echo "... deps/src/gl.s"
+	@echo "... examples/clock.o"
+	@echo "... examples/clock.i"
+	@echo "... examples/clock.s"
 	@echo "... examples/e1.o"
 	@echo "... examples/e1.i"
 	@echo "... examples/e1.s"
