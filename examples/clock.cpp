@@ -25,9 +25,9 @@ int main() {
 		0, 1, 3,
 		0, 2, 3
 	};
-	R::Object tickmark = r.createObject();
-	r.setVertexAttribs(tickmark, 0, 4, 4, vertices);
-	r.setTriangleIndices(tickmark, 2, triangles);
+	R::Object clock = r.createObject();
+	r.setVertexAttribs(clock, 0, 4, 4, vertices);
+	r.setTriangleIndices(clock, 2, triangles);
 
     glm::mat4 big_mark_scale = glm::scale((mat4(1.0f)),vec3(0.2,0.6,1.0f));
     glm::mat4 translate_big_mark = glm::translate(mat4(1.0f),vec3(0.0f,1,0.0));
@@ -56,7 +56,7 @@ int main() {
             glm::mat4 boundary_scale = scale(mat4(1.0f),vec3(7.5f,7.5f,1.0f));
             r.setUniform<vec4>(program,"color",vec4(0.625,0.625,0.625,1.0f));
             r.setUniform<mat4>(program,"transform",boundary_scale);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
 
 
             r.setUniform<vec4>(program, "color", vec4(0.0, 0.0, 0.0, 1.0));
@@ -67,12 +67,12 @@ int main() {
         for(int i=0;i<12;++i){
             glm::mat4 rotate_big_mark = glm::rotate(mat4(1.0f),radians(i*30.0f),vec3(0.0f,0.0f,1.0f));
             r.setUniform<mat4>(program,"transform",rotate_big_mark*big_mark_scale*translate_big_mark);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
         }
         for(int i=0;i<60;++i){
             glm::mat4 rotate_small_mark = glm::rotate(mat4(1.0f),radians(i*6.0f),vec3(0.0f,0.0f,1.0f));
             r.setUniform<mat4>(program,"transform",rotate_small_mark*small_mark_scale*translate_small_mark);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
         }
 
             auto now = std::chrono::system_clock::now();
@@ -109,22 +109,22 @@ int main() {
             glm::mat4 rotate_hours = glm::rotate(mat4(1.0f),radians(hour_in_degree),vec3(0.0f,0.0f,-1.0f));
 
             r.setUniform<mat4>(program,"transform", rotate_hours*hour_hand_translate*hour_hand_scale);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
 
             glm::mat4 rotate_minutes = glm::rotate(glm::mat4(1.0f),radians(minute_in_degree),vec3(0.0f,0.0f,-1.0f));
 
             r.setUniform<mat4>(program,"transform",rotate_minutes*minute_hand_translate*minute_hand_scale);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
 
             glm::mat4 rotate_seconds = glm::rotate(glm::mat4(1.0f),radians(seconds_in_degree),vec3(0.0f,0.0f,-1.0f));
 
             r.setUniform<vec4>(program,"color",vec4(0.8,0.0,0.0,1.0));
             r.setUniform<mat4>(program,"transform",rotate_seconds*second_hand_translate*second_hand_scale);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
 
             r.setUniform<vec4>(program,"color",vec4(0.0,0.0,0.0,1.0));
             r.setUniform<mat4>(program,"transform",initial_scale);
-            r.drawObject(tickmark);
+            r.drawObject(clock);
 
         r.show();
     }
