@@ -220,6 +220,19 @@ clock/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/build
 .PHONY : clock/fast
 
+#=============================================================================
+# Target rules for targets named scene
+
+# Build rule for target.
+scene: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scene
+.PHONY : scene
+
+# fast build rule for target.
+scene/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/build
+.PHONY : scene/fast
+
 deps/src/gl.o: deps/src/gl.c.o
 .PHONY : deps/src/gl.o
 
@@ -412,6 +425,30 @@ examples/e6.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/e6.dir/build.make CMakeFiles/e6.dir/examples/e6.cpp.s
 .PHONY : examples/e6.cpp.s
 
+examples/scene.o: examples/scene.cpp.o
+.PHONY : examples/scene.o
+
+# target to build an object file
+examples/scene.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/examples/scene.cpp.o
+.PHONY : examples/scene.cpp.o
+
+examples/scene.i: examples/scene.cpp.i
+.PHONY : examples/scene.i
+
+# target to preprocess a source file
+examples/scene.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/examples/scene.cpp.i
+.PHONY : examples/scene.cpp.i
+
+examples/scene.s: examples/scene.cpp.s
+.PHONY : examples/scene.s
+
+# target to generate assembly for a file
+examples/scene.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/examples/scene.cpp.s
+.PHONY : examples/scene.cpp.s
+
 src/hw.o: src/hw.cpp.o
 .PHONY : src/hw.o
 
@@ -476,6 +513,7 @@ help:
 	@echo "... e4"
 	@echo "... e5"
 	@echo "... e6"
+	@echo "... scene"
 	@echo "... deps/src/gl.o"
 	@echo "... deps/src/gl.i"
 	@echo "... deps/src/gl.s"
@@ -500,6 +538,9 @@ help:
 	@echo "... examples/e6.o"
 	@echo "... examples/e6.i"
 	@echo "... examples/e6.s"
+	@echo "... examples/scene.o"
+	@echo "... examples/scene.i"
+	@echo "... examples/scene.s"
 	@echo "... src/hw.o"
 	@echo "... src/hw.i"
 	@echo "... src/hw.s"

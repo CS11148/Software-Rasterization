@@ -6,5 +6,6 @@
 /home/vboxuser/Downloads/a1-master/build/CMakeFiles/e5.dir
 /home/vboxuser/Downloads/a1-master/build/CMakeFiles/e6.dir
 /home/vboxuser/Downloads/a1-master/build/CMakeFiles/clock.dir
+/home/vboxuser/Downloads/a1-master/build/CMakeFiles/scene.dir
 /home/vboxuser/Downloads/a1-master/build/CMakeFiles/edit_cache.dir
 /home/vboxuser/Downloads/a1-master/build/CMakeFiles/rebuild_cache.dir

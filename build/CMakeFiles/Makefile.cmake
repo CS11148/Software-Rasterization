@@ -58,4 +58,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/e5.dir/DependInfo.cmake"
   "CMakeFiles/e6.dir/DependInfo.cmake"
   "CMakeFiles/clock.dir/DependInfo.cmake"
+  "CMakeFiles/scene.dir/DependInfo.cmake"
   )

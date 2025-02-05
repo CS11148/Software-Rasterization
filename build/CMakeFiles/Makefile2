@@ -71,6 +71,7 @@ all: CMakeFiles/e4.dir/all
 all: CMakeFiles/e5.dir/all
 all: CMakeFiles/e6.dir/all
 all: CMakeFiles/clock.dir/all
+all: CMakeFiles/scene.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -86,6 +87,7 @@ clean: CMakeFiles/e4.dir/clean
 clean: CMakeFiles/e5.dir/clean
 clean: CMakeFiles/e6.dir/clean
 clean: CMakeFiles/clock.dir/clean
+clean: CMakeFiles/scene.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -295,6 +297,32 @@ clock: CMakeFiles/clock.dir/rule
 CMakeFiles/clock.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/clock.dir/build.make CMakeFiles/clock.dir/clean
 .PHONY : CMakeFiles/clock.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/scene.dir
+
+# All Build rule for target.
+CMakeFiles/scene.dir/all: CMakeFiles/a1.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/vboxuser/Downloads/a1-master/build/CMakeFiles --progress-num=19,20 "Built target scene"
+.PHONY : CMakeFiles/scene.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/scene.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/vboxuser/Downloads/a1-master/build/CMakeFiles 6
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/scene.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/vboxuser/Downloads/a1-master/build/CMakeFiles 0
+.PHONY : CMakeFiles/scene.dir/rule
+
+# Convenience name for target.
+scene: CMakeFiles/scene.dir/rule
+.PHONY : scene
+
+# clean rule for target.
+CMakeFiles/scene.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/scene.dir/build.make CMakeFiles/scene.dir/clean
+.PHONY : CMakeFiles/scene.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

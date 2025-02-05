@@ -108,43 +108,43 @@ namespace COL781 {
 
 		FragmentShader Rasterizer::fsSpecularLighting(){
 			return [](const Uniforms &uniforms, const Attribs &in) {
-				glm::vec3 normal = glm::normalize(in.get<glm::vec4>(0));  // Make sure the normal is normalized
+				glm::vec3 normal = glm::normalize(in.get<glm::vec4>(0));  
 
-				// Object and ambient colors
+				
 				glm::vec3 object_color = uniforms.get<glm::vec3>("objectColor");
 				glm::vec3 ambient_color = uniforms.get<glm::vec3>("ambientColor");
 				
-				// Ambient lighting contribution
+				
 				glm::vec3 ambient = object_color * ambient_color;
 
-				// Light parameters
+				
 				glm::vec3 light_color = uniforms.get<glm::vec3>("lightColor");
-				glm::vec3 light_direction = glm::normalize(uniforms.get<glm::vec3>("lightDir"));  // Make sure the light direction is normalized
+				glm::vec3 light_direction = glm::normalize(uniforms.get<glm::vec3>("lightDir")); 
 
-				// Calculate the diffuse lighting
+				
 				float diffuse_intensity = std::max(0.0f, glm::dot(normal, light_direction));
 				glm::vec3 diffuse_light = diffuse_intensity * light_color * object_color;
 
-				// View parameters
+				
 				glm::vec3 view_position = uniforms.get<glm::vec3>("viewPos");
-				glm::vec3 frag_position = in.get<glm::vec3>(0);  // Assuming position is stored in the 2nd attribute slot
+				glm::vec3 frag_position = in.get<glm::vec3>(0);  
 				glm::vec3 view_direction = glm::normalize(view_position - frag_position);
 
-				// Reflection direction (R = 2 * (N · L) * N - L)
+			
 				glm::vec3 reflect_dir = glm::normalize(glm::reflect(-light_direction, normal));
 
-				// Calculate the specular component
+				
 				float specular_strength = std::max(0.0f, glm::dot(view_direction, reflect_dir));
-				float shininess = uniforms.get<float>("blinnpow");  // Shininess factor (Blinn exponent)
+				float shininess = uniforms.get<float>("blinnpow");  
 				float specular_intensity = std::pow(specular_strength, shininess);
 
-				// Specular lighting contribution
-				glm::vec3 specular_light = specular_intensity * light_color;  // Specular color is typically the light color
+				
+				glm::vec3 specular_light = specular_intensity * light_color;  
 
-				// Final color: Ambient + Diffuse + Specular
+				
 				glm::vec3 final_color = ambient + diffuse_light + specular_light;
 
-				// Convert final color to a 4D vector and return
+				
 				glm::vec4 color(final_color.x, final_color.y, final_color.z, 1.0f);
 
 				return color;
@@ -318,30 +318,25 @@ namespace COL781 {
 				object.vertexAttributes.resize(n);
 			}
 
-			// Iterate over each vertex
+			
 			for (int i = 0; i < n; ++i) {
-				Attribs& attrib = object.vertexAttributes[i]; // Get the current vertex's attributes
+				Attribs& attrib = object.vertexAttributes[i]; 
 
-				// Now set the attribute for the current vertex
+				
 				if (d == 1) {
-					// If the dimension is 1 (float)
 					attrib.set(attribIndex, data[i * d]);
 				}
 				else if (d == 2) {
-					// If the dimension is 2 (glm::vec2)
 					attrib.set(attribIndex, glm::vec2(data[i * d], data[i * d + 1]));
 				}
 				else if (d == 3) {
-					// If the dimension is 3 (glm::vec3)
 					attrib.set(attribIndex, glm::vec3(data[i * d], data[i * d + 1], data[i * d + 2]));
 				}
 				else if (d == 4) {
-					// If the dimension is 4 (glm::vec4)
 					attrib.set(attribIndex, glm::vec4(data[i * d], data[i * d + 1], data[i * d + 2], data[i * d + 3]));
 				}
 				else {
-					// Handle error case (invalid dimension)
-					std::cerr << "Unsupported dimension: " << d << std::endl;
+					std::cout << "Unsupported dimension: " << d << std::endl;
 				}
 			}
 			
@@ -390,6 +385,23 @@ namespace COL781 {
 		{
 			program.uniforms.set(name,value);
 		}
+
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::vec2 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat2 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
+		template<> void Rasterizer::setUniform(ShaderProgram &program, const std::string &name, glm::mat3 value)
+		{
+			program.uniforms.set(name,value);
+		}
+
+
 
 
 		void Rasterizer::useShaderProgram(const ShaderProgram &program)
@@ -457,30 +469,30 @@ namespace COL781 {
 
 		bool Rasterizer::is_in_triangle(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3, glm::vec4 point)
 		{
-			// Remove the extra homogeneous coordinate (the fourth component)
+			
 			glm::vec3 v0 = glm::vec3(p1);
 			glm::vec3 v1 = glm::vec3(p2);
 			glm::vec3 v2 = glm::vec3(p3);
 			glm::vec3 p = glm::vec3(point);
 			
-			// Compute vectors
+			
 			glm::vec3 v0v1 = v1 - v0;
 			glm::vec3 v0v2 = v2 - v0;
 			glm::vec3 v0p = p - v0;
 			
-			// Compute dot products
+			
 			float dot00 = glm::dot(v0v2, v0v2);
 			float dot01 = glm::dot(v0v2, v0v1);
 			float dot02 = glm::dot(v0v2, v0p);
 			float dot11 = glm::dot(v0v1, v0v1);
 			float dot12 = glm::dot(v0v1, v0p);
 			
-			// Compute barycentric coordinates
+			
 			float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
 			float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
 			float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 			
-			// Check if point is in triangle
+			
 			return (u >= 0) && (v >= 0) && (u + v < 1);
 		}
 
@@ -492,19 +504,19 @@ namespace COL781 {
 			glm::vec3 v2 = glm::vec3(p3);
 			glm::vec3 p = glm::vec3(point);
 			
-			// Compute vectors
+			
 			glm::vec3 v0v1 = v1 - v0;
 			glm::vec3 v0v2 = v2 - v0;
 			glm::vec3 v0p = p - v0;
 			
-			// Compute dot products
+			
 			float dot00 = glm::dot(v0v2, v0v2);
 			float dot01 = glm::dot(v0v2, v0v1);
 			float dot02 = glm::dot(v0v2, v0p);
 			float dot11 = glm::dot(v0v1, v0v1);
 			float dot12 = glm::dot(v0v1, v0p);
 			
-			// Compute barycentric coordinates
+			
 			float invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
 			float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
 			float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
@@ -532,20 +544,19 @@ namespace COL781 {
 
 			else 
     		{
-				// Define camera position at z = -1
+				
 				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
 
-				// Define screen plane at z = 0
+				
 				float screen_z = -1.0f;
 
-				// Calculate the direction from the camera to the point
+				
 				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
 
-				// Find the intersection of the ray with the screen plane
+				
 				float t = (screen_z - camera_pos.z) / direction.z;
 				glm::vec3 intersection = camera_pos + t * direction;
 
-				// Convert the intersection point to screen coordinates
 				float x = (intersection.x + 1.0f) * 0.5f * screen_width;
 				float y = (1.0f - intersection.y) * 0.5f * screen_height;
 
@@ -569,20 +580,20 @@ namespace COL781 {
 
 			else 
     		{
-				// Define camera position at z = -1
+				
 				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
 
-				// Define screen plane at z = 0
+				
 				float screen_z = -1.0f;
 
-				// Calculate the direction from the camera to the point
+				
 				glm::vec3 direction(point.x, point.y, point.z - camera_pos.z);
 
-				// Find the intersection of the ray with the screen plane
+				
 				float t = (screen_z - camera_pos.z) / direction.z;
 				glm::vec3 intersection = camera_pos + t * direction;
 
-				// Convert the intersection point to screen coordinates
+				
 				float x = intersection.x; 
 				float y = intersection.y;
 
@@ -618,9 +629,9 @@ namespace COL781 {
 			glm::vec4 p2 = p2_att.get<glm::vec4>(0);
 			glm::vec4 p3 = p3_att.get<glm::vec4>(0);
 
-			std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<std::endl;
-			std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<std::endl;
-			std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<std::endl;
+			// std::cout<<"p1 "<<p1.x<<" "<<p1.y<<" "<<p1.z<<std::endl;
+			// std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<std::endl;
+			// std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<std::endl;
 
 
 			int screen_width = framebuffer->w;
@@ -729,11 +740,6 @@ namespace COL781 {
 	
 
 		glm::vec4 Rasterizer::average_color(glm::vec4 c1, glm::vec4 c2, glm::vec4 c3, std::vector<float> Barycentric_coordinates) {
-			// Ensure the Barycentric coordinates vector has exactly 3 elements
-			if (Barycentric_coordinates.size() != 3) {
-				throw std::invalid_argument("Barycentric_coordinates must have exactly 3 elements.");
-			}
-
 			
 			glm::vec4 average_color = c1 * Barycentric_coordinates[0] + c2 * Barycentric_coordinates[1] + c3 * Barycentric_coordinates[2];
 
