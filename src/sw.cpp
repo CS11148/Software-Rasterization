@@ -100,6 +100,9 @@ namespace COL781 {
 
 				glm::vec3 final_color = ambient+diffuse_light;
 
+				float gamma = 2.2f;
+        		final_color = glm::pow(final_color, glm::vec3(1.0f / gamma));
+
 				glm::vec4 color(final_color.x,final_color.y,final_color.z,1.0f);
 
 				return color;
@@ -143,6 +146,9 @@ namespace COL781 {
 
 				
 				glm::vec3 final_color = ambient + diffuse_light + specular_light;
+
+				float gamma = 2.2f;
+        		final_color = glm::pow(final_color, glm::vec3(1.0f / gamma));
 
 				
 				glm::vec4 color(final_color.x, final_color.y, final_color.z, 1.0f);
@@ -545,7 +551,7 @@ namespace COL781 {
 			else 
     		{
 				
-				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
+				glm::vec3 camera_pos(0.0f, 0.0f, -5.0f);
 
 				
 				float screen_z = -1.0f;
@@ -581,7 +587,7 @@ namespace COL781 {
 			else 
     		{
 				
-				glm::vec3 camera_pos(0.0f, 0.0f, -100.0f);
+				glm::vec3 camera_pos(0.0f, 0.0f, -5.0f);
 
 				
 				float screen_z = -1.0f;
@@ -667,6 +673,9 @@ namespace COL781 {
 			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
 
 
+
+
+
 			// std::cout<<"p1_screen "<<p1_screen.x<<" "<<p1_screen.y<<std::endl;
 			// std::cout<<"p2 screen "<<p2_screen.x<<" "<<p2_screen.y<<std::endl;
 			// std::cout<<"p3 screen "<<p3_screen.x<<" "<<p3_screen.y<<std::endl;
@@ -680,16 +689,28 @@ namespace COL781 {
 			int min_y = min(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 			int max_y = max(static_cast<int>(p1_screen.y), static_cast<int>(p2_screen.y), static_cast<int>(p3_screen.y));
 
+			min_x = std::max(0,min_x);
+			min_y = std::max(0,min_y);
+
+			max_x = std::min(max_x, screen_width);
+			max_y = std::max(max_y, screen_height);
+
+			
+			
+
 			// max_x=framebuffer->w;
 			// max_y=framebuffer->h;
 			// min_x=0;
 			// min_y=0;
+
 			
 			for (int y = min_y; y <= max_y; ++y) 
 			{
 				for (int x = min_x; x <= max_x; ++x) 
 				{
 					// Create a point in the middle of the pixel
+
+
 					glm::vec4 point((float)x / screen_width * 2.0f - 1.0f, 1.0f - (float)y / screen_height * 2.0f, 0.0f, 1.0f);
 
 					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1_perspective,p2_perspective,p3_perspective,point);
@@ -699,6 +720,8 @@ namespace COL781 {
 					glm::vec4 colors = convert_to_rgb_colors(average_c);
 
 					float z = Barycentric_C[0]*p1.z+Barycentric_C[1]*p2.z+Barycentric_C[2]*p3.z;
+
+					
 					
 					if (is_in_triangle(p1_perspective, p2_perspective, p3_perspective, point)) 
 					{
@@ -711,6 +734,8 @@ namespace COL781 {
 
 						else if(z<=z_buffer[y*screen_width+x])
 						{
+							std::cout<<"here"<<std::endl;
+
 							z_buffer[y*screen_width+x]=z;
 							Uint32 color = SDL_MapRGB(framebuffer->format, colors.x, colors.y, colors.z);
 							draw_pixel(framebuffer, x, y, color);

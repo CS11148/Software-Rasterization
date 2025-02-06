@@ -3,13 +3,15 @@
 #include <chrono>
 #include <iomanip>
 
+
+
 namespace R = COL781::Software;
 // namespace R = COL781::Hardware;
 using namespace glm;
 
 int main() {
 	R::Rasterizer r;
-    if (!r.initialize("Example 1", 640, 640))
+    if (!r.initialize("Clock", 640, 640))
         return EXIT_FAILURE;
     R::ShaderProgram program = r.createShaderProgram(
         r.vsTransform(),
