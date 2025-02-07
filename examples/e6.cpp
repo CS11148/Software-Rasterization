@@ -13,8 +13,8 @@ int main() {
 
     R::ShaderProgram program = r.createShaderProgram(
         r.vsNormalTransform(),
-        r.fsDiffuseLighting()
-        // r.fsSpecularLighting()
+        // r.fsDiffuseLighting()
+        r.fsSpecularLighting()
     );
 
     float vertices[] = {
@@ -132,9 +132,9 @@ int main() {
         r.setUniform(program, "objectColor", objectColor);
         r.setUniform(program, "ambientColor", ambientColor);
         // for specular lighting
-        // r.setUniform(program, "viewPos", vec3(inverse(view) * vec4(0.0f, 0.0f, 0.0f, 1.0f)));
-        // r.setUniform(program, "specularColor", specularColor);
-        // r.setUniform(program, "blinnpow", 32);
+        r.setUniform(program, "viewPos", vec3(inverse(view) * vec4(0.0f, 0.0f, 0.0f, 1.0f)));
+        r.setUniform(program, "specularColor", specularColor);
+        r.setUniform(program, "blinnpow", 32);
 		r.drawObject(shape);
         r.show();
     }

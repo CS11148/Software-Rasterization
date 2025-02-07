@@ -57,10 +57,16 @@ namespace COL781 {
 		VertexShader Rasterizer::vsNormalTransform(){
 			return [](const Uniforms &uniforms, const Attribs &in, Attribs &out) {
 				glm::vec4 vertex = in.get<glm::vec4>(0);
-				glm::vec4 normal = in.get<glm::vec4>(1);
+				glm::vec3 normal = in.get<glm::vec3>(1);
 				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
 				glm::mat4 wsTransform = uniforms.get<glm::mat4>("wsTransform");
-				out.set<glm::vec4>(0,normal*wsTransform);
+
+
+				glm::vec4 n1 = glm::vec4(normal,0.0f);
+
+
+				out.set<glm::vec3>(0,glm::vec3(n1*wsTransform));
+
 				return transform*vertex;
 				
 			};
@@ -83,7 +89,7 @@ namespace COL781 {
 
 		FragmentShader Rasterizer::fsDiffuseLighting(){
 			return [](const Uniforms &uniforms, const Attribs &in) {
-				glm::vec3 normal = in.get<glm::vec4>(0);
+				glm::vec3 normal = in.get<glm::vec3>(0);
 
 				glm::vec3 object_color = uniforms.get<glm::vec3>("objectColor");
 				glm::vec3 ambient_color = uniforms.get<glm::vec3>("ambientColor");
@@ -111,7 +117,7 @@ namespace COL781 {
 
 		FragmentShader Rasterizer::fsSpecularLighting(){
 			return [](const Uniforms &uniforms, const Attribs &in) {
-				glm::vec3 normal = glm::normalize(in.get<glm::vec4>(0));  
+				glm::vec3 normal = glm::normalize(in.get<glm::vec3>(0));  
 
 				
 				glm::vec3 object_color = uniforms.get<glm::vec3>("objectColor");
@@ -734,7 +740,7 @@ namespace COL781 {
 
 						else if(z<=z_buffer[y*screen_width+x])
 						{
-							std::cout<<"here"<<std::endl;
+							
 
 							z_buffer[y*screen_width+x]=z;
 							Uint32 color = SDL_MapRGB(framebuffer->format, colors.x, colors.y, colors.z);
