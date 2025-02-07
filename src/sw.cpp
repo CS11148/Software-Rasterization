@@ -587,7 +587,7 @@ namespace COL781 {
 			{
 				float x = point.x; 
 				float y = point.y;
-				return glm::vec4(x, y,0,0);
+				return glm::vec4(x, y,0,1);
 			}
 
 			else 
@@ -609,7 +609,7 @@ namespace COL781 {
 				float x = intersection.x; 
 				float y = intersection.y;
 
-				return glm::vec4(x, y,0,0);
+				return glm::vec4(x, y,0,t);
     		}
 		}
 
@@ -665,9 +665,9 @@ namespace COL781 {
 			// std::cout<<"p2 "<<p2.x<<" "<<p2.y<<" "<<p2.z<<" "<<p2.w<<std::endl;
 			// std::cout<<"p3 "<<p3.x<<" "<<p3.y<<" "<<p3.z<<" "<<p3.w<<std::endl;
 
-			glm::vec4 color_vertex_1 = fs(uniforms,out1);
-			glm::vec4 color_vertex_2 = fs(uniforms,out2);
-			glm::vec4 color_vertex_3 = fs(uniforms,out3);
+			// glm::vec4 color_vertex_1 = fs(uniforms,out1);
+			// glm::vec4 color_vertex_2 = fs(uniforms,out2);
+			// glm::vec4 color_vertex_3 = fs(uniforms,out3);
 
 			// Convert 3D coordinates to 2D screen coordinates
 			glm::vec2 p1_screen = convert_to_screen_coordinates(p1, screen_width, screen_height,depth_enabled);
@@ -677,6 +677,15 @@ namespace COL781 {
 			glm::vec4 p1_perspective = perspective_coordinates(p1,screen_width,screen_height,depth_enabled);
 			glm::vec4 p2_perspective = perspective_coordinates(p2,screen_width,screen_height,depth_enabled);
 			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
+
+			float t1 = p1_perspective.w;
+			float t2 = p2_perspective.w;
+			float t3 = p3_perspective.w;
+
+			glm::vec4 color_vertex_1 = fs(uniforms,out1)/t1;
+			glm::vec4 color_vertex_2 = fs(uniforms,out2)/t2;
+			glm::vec4 color_vertex_3 = fs(uniforms,out3)/t3;
+
 
 
 
@@ -722,6 +731,10 @@ namespace COL781 {
 					std::vector<float> Barycentric_C = Barycentric_Coordinates(p1_perspective,p2_perspective,p3_perspective,point);
 
 					glm::vec4 average_c = average_color(color_vertex_1,color_vertex_2,color_vertex_3,Barycentric_C);
+
+					float a = average_c.w;
+
+					average_c = average_c/a;
 
 					glm::vec4 colors = convert_to_rgb_colors(average_c);
 
