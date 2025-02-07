@@ -155,10 +155,10 @@ float vertices2[] = {
 
     float vertices3[] = {
 
-		-3.0,  3.0, 0.9, 1.0,
-        -3.0,  -0.45, 0.9, 1.0,
-         3.0,  -0.45, 0.9, 1.0,
-         3.0,  3.0, 0.9, 1.0,
+		-3.0,  3.0, 5, 1.0,
+        -3.0,  -0.25, 5, 1.0,
+         3.0,  -0.25, 5, 1.0,
+         3.0,  3.0, 5, 1.0,
 
 
     };
@@ -183,9 +183,14 @@ float vertices2[] = {
 
 
 
-    mat4 rotation_base = glm::rotate(mat4(1.0f),radians(30.0f),vec3(0.0f,1.0f,0.0f));
+    mat4 rotation_base = glm::rotate(mat4(1.0f),radians(210.0f),vec3(0.0f,-1.0f,0.0f));
     mat4 translation = glm::translate(mat4(1.0f),vec3(0.0f,0.35,0.0f));
     mat4 translation_rotation = rotation_base*translation;
+
+    mat4 view = translate(mat4(1.0f), vec3(0.0f, 0.0f, -2.0f)); 
+    mat4 projection = perspective(radians(60.0f), 1.0f, 0.1f, 100.0f);
+
+    mat4 correct = projection*view;
 
 
 
@@ -202,7 +207,7 @@ float vertices2[] = {
 
        
 
-        r.setUniform(program,"transform",rotation_base);
+        r.setUniform(program,"transform",correct*rotation_base);
         r.drawObject(clock);
 
 
@@ -212,11 +217,11 @@ float vertices2[] = {
 
 
         r.setUniform(program,"color",vec4(0.34,0.34,0.34,1));
-        r.setUniform(program,"transform", translation_rotation);
+        r.setUniform(program,"transform", correct*translation_rotation);
 
         mat4 rotate_wind = glm::rotate(mat4(1.0f),radians(float(i)),vec3(0.0f,0.0f,-1.0f));
 
-        r.setUniform(program,"transform", translation_rotation*rotate_wind);
+        r.setUniform(program,"transform", correct*translation_rotation*rotate_wind);
 
         r.drawObject(clock2);
 

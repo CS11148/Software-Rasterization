@@ -61,11 +61,20 @@ namespace COL781 {
 				glm::mat4 transform = uniforms.get<glm::mat4>("transform");
 				glm::mat4 wsTransform = uniforms.get<glm::mat4>("wsTransform");
 
+				glm::vec3 view_p = uniforms.get<glm::vec3>("viewPos");
+
+				glm::vec4 view_p1 = glm::vec4(view_p,0);
+
 
 				glm::vec4 n1 = glm::vec4(normal,0.0f);
 
 
 				out.set<glm::vec3>(0,glm::vec3(n1*wsTransform));
+
+				out.set<glm::vec4>(1,glm::vec4(transform*vertex));
+
+
+				out.set<glm::vec3>(2,glm::vec3(view_p1.x,view_p1.y,view_p1.z));
 
 				return transform*vertex;
 				
@@ -109,7 +118,11 @@ namespace COL781 {
 				float gamma = 2.2f;
         		final_color = glm::pow(final_color, glm::vec3(1.0f / gamma));
 
+				final_color = glm::clamp(final_color, 0.0f, 1.0f);
+
 				glm::vec4 color(final_color.x,final_color.y,final_color.z,1.0f);
+
+				
 
 				return color;
 			};
@@ -128,16 +141,24 @@ namespace COL781 {
 
 				
 				glm::vec3 light_color = uniforms.get<glm::vec3>("lightColor");
+
 				glm::vec3 light_direction = glm::normalize(uniforms.get<glm::vec3>("lightDir")); 
 
 				
 				float diffuse_intensity = std::max(0.0f, glm::dot(normal, light_direction));
+
 				glm::vec3 diffuse_light = diffuse_intensity * light_color * object_color;
 
 				
-				glm::vec3 view_position = uniforms.get<glm::vec3>("viewPos");
-				glm::vec3 frag_position = in.get<glm::vec3>(0);  
-				glm::vec3 view_direction = glm::normalize(view_position - frag_position);
+				// glm::vec3 view_position = uniforms.get<glm::vec3>("viewPos");
+
+				glm::vec3 view_position = in.get<glm::vec3>(2);
+
+				glm::vec4 frag_position = in.get<glm::vec4>(1); 
+
+				glm::vec3 frag_position1 = glm::vec3(frag_position.x,frag_position.y,frag_position.z);
+
+				glm::vec3 view_direction = glm::normalize(view_position - frag_position1);
 
 			
 				glm::vec3 reflect_dir = glm::normalize(glm::reflect(-light_direction, normal));
@@ -151,11 +172,15 @@ namespace COL781 {
 				glm::vec3 specular_light = specular_intensity * light_color;  
 
 				
-				glm::vec3 final_color = ambient + diffuse_light + specular_light;
+				glm::vec3 final_color = (ambient + diffuse_light + specular_light);
+
+				final_color  = final_color/3.0f;
 
 				float gamma = 2.2f;
+
         		final_color = glm::pow(final_color, glm::vec3(1.0f / gamma));
 
+				final_color = glm::clamp(final_color, 0.0f, 1.0f);
 				
 				glm::vec4 color(final_color.x, final_color.y, final_color.z, 1.0f);
 
@@ -424,6 +449,10 @@ namespace COL781 {
 		void Rasterizer::drawObject(const Object& tickmark)
 		{
 
+			// std::vector<float> b1 = Barycentric_Coordinates(glm::vec4(1,0,0,1),glm::vec4(-1,0,0,1),glm::vec4(0,1,0,1),glm::vec4(0,0,0,1));
+
+			// std::cout<<b1[0]<<" "<<b1[1]<<" "<<b1[2]<<std::endl;
+
 			for(int i=0; i<tickmark.indices.size(); ++i)
 			{
 
@@ -547,7 +576,7 @@ namespace COL781 {
 			point.y=(point.y)/(point.w);
 			point.z=(point.z)/(point.w);
 
-			if(depth_enabled==false)
+			if(depth_enabled==false || depth_enabled==true)
 			{
 				float x = (point.x + 1.0f) * 0.5f * screen_width;
 				float y = (1.0f - point.y) * 0.5f * screen_height;
@@ -583,10 +612,11 @@ namespace COL781 {
 			point.y=(point.y)/(point.w);
 			point.z=(point.z)/(point.w);
 
-			if(depth_enabled==false)
+			if(depth_enabled==false || depth_enabled==true)
 			{
 				float x = point.x; 
 				float y = point.y;
+				float z = point.z;
 				return glm::vec4(x, y,0,1);
 			}
 
@@ -609,7 +639,9 @@ namespace COL781 {
 				float x = intersection.x; 
 				float y = intersection.y;
 
-				return glm::vec4(x, y,0,t);
+				float w = point.z;
+
+				return glm::vec4(x, y, 0, w);
     		}
 		}
 
@@ -678,9 +710,10 @@ namespace COL781 {
 			glm::vec4 p2_perspective = perspective_coordinates(p2,screen_width,screen_height,depth_enabled);
 			glm::vec4 p3_perspective = perspective_coordinates(p3,screen_width,screen_height,depth_enabled);
 
-			float t1 = p1_perspective.w;
-			float t2 = p2_perspective.w;
-			float t3 = p3_perspective.w;
+			float t1 = p1.w;
+			float t2 = p2.w;
+			float t3 = p3.w;
+
 
 			glm::vec4 color_vertex_1 = fs(uniforms,out1)/t1;
 			glm::vec4 color_vertex_2 = fs(uniforms,out2)/t2;
